@@ -23,6 +23,12 @@ extension NSAttributedString {
     }
 }
 
+struct Substitution {
+    let source: String
+    let replacement: String?
+    let ipaNotation: String?
+}
+
 extension SpokenInstruction {
     func attributedText(for legProgress: RouteLegProgress) -> NSAttributedString {
         let attributedText = NSMutableAttributedString(string: text)
@@ -43,6 +49,106 @@ extension SpokenInstruction {
             }
         }
         return attributedText
+    }
+    
+    func hebrewSubstitutionDictionary() -> [String: Substitution] {
+        let substitutions: [Substitution] = [
+            Substitution(source: "פנו", replacement: nil, ipaNotation: "pnu"),
+            Substitution(source: "ופנו", replacement: nil, ipaNotation: "upnu"),
+            Substitution(source: "פניה", replacement: nil, ipaNotation: "pniya"),
+            Substitution(source: "הגעתם", replacement: "הגע tem", ipaNotation: nil),
+            Substitution(source: "בכיכר", replacement: "באקיכר", ipaNotation: nil),
+            Substitution(source: "ברכיבה", replacement: nil, ipaNotation: "beRXiva"),
+            Substitution(source: "ליעד", replacement: "לה יעד", ipaNotation: nil),
+            Substitution(source: "הקורקינט", replacement: "הא קורקינט", ipaNotation: nil),
+            Substitution(source: "מהקורקינט", replacement: "מהא קורקינט", ipaNotation: nil),
+            Substitution(source: "רדו", replacement: nil, ipaNotation: "Redu"),
+            Substitution(source: "הפניה", replacement: nil, ipaNotation: "hapniya"),
+            Substitution(source: "בפניה", replacement: nil, ipaNotation: "bapniya"),
+            Substitution(source: "צפון", replacement: nil, ipaNotation: "tsafon"),
+            Substitution(source: "הא", replacement: nil, ipaNotation: "ha"),
+            Substitution(source: "האופניים", replacement: nil, ipaNotation: "ha-of-an_aim"),
+            Substitution(source: "המשיכו", replacement: nil, ipaNotation: "ham-SiXu")
+            ]
+
+        return substitutions.reduce(into: [String: Substitution]()) { $0[$1.source] = $1 }
+    }
+    
+    func hebrewSubstitutionDictionaryForHebrewDevice() -> [String: Substitution] {
+        let substitutions: [Substitution] = [
+            Substitution(source: "פנו", replacement: "פּ-נו", ipaNotation: nil),
+            Substitution(source: "ופנו", replacement: "וּפּ-נו", ipaNotation: nil),
+            Substitution(source: "פניה", replacement: "פּ-נּיה", ipaNotation: nil),
+            Substitution(source: "הגעתם", replacement: "הגע tem", ipaNotation: nil),
+            Substitution(source: "בכיכר", replacement: "באקיכר", ipaNotation: nil),
+            Substitution(source: "ברכיבה", replacement: "בר׳כיבה", ipaNotation: nil),
+            Substitution(source: "ליעד", replacement: "לה יעד", ipaNotation: nil),
+            Substitution(source: "הקורקינט", replacement: "הא קורקינט", ipaNotation: nil),
+            Substitution(source: "מהקורקינט", replacement: "מהא קורקינט", ipaNotation: nil),
+            Substitution(source: "רדו", replacement: "רידו", ipaNotation: nil),
+            Substitution(source: "הפניה", replacement: "הפּ-נּיה", ipaNotation: nil),
+            Substitution(source: "בפניה", replacement: "בא פּ-נּיה", ipaNotation: nil),
+            Substitution(source: "צפון", replacement: "צהּ פון", ipaNotation: nil),
+            Substitution(source: "האופניים", replacement: "האוֹפני׳ם", ipaNotation: nil),
+//            Substitution(source: "המשיכו", replacement: "המּ׳שׁיחו", ipaNotation: nil)
+            Substitution(source: "המשיכו", replacement: "אָמּשי-חוּ", ipaNotation: nil)
+            ]
+
+        return substitutions.reduce(into: [String: Substitution]()) { $0[$1.source] = $1 }
+    }
+
+    func replaceStringsInText(_ text: String, with substitutionDictionary: [String: Substitution]) -> String {
+        var replacedText = text
+        for key in substitutionDictionary.keys {
+            let substitution = substitutionDictionary[key]!
+            if let replacement = substitution.replacement {
+                replacedText = replacedText.replacingOccurrences(of: substitution.source, with: replacement)
+            }
+        }
+        return replacedText
+    }
+
+    func addIPANotationToAttributedString(_ attrStr: NSAttributedString, with substitutionDictionary: [String: Substitution]) -> NSAttributedString {
+        let attributedString = NSMutableAttributedString(string: attrStr.string)
+        attributedString.string.enumerateSubstrings(in: attributedString.string.startIndex..<attributedString.string.endIndex, options: .byWords) {
+            (substring, substringRange, _, _) in
+            for key in substitutionDictionary.keys {
+                if substring == key {
+                    let range = NSRange(substringRange, in: attributedString.string)
+
+                    // don't add "tsafon" IPA notation if it's part of a composite such as tsfon-mizrah or tsfon-maarav
+                    if key == "צפון" {
+                        let startIndex = String.Index(utf16Offset: range.location+range.length, in: attributedString.string)
+                        let endIndex = attributedString.string.index(startIndex, offsetBy: 1)
+                        let followingChar = attributedString.string[startIndex..<endIndex]
+                        if followingChar == "-" {
+                            return
+                        }
+                    }
+
+                    let substitution = substitutionDictionary[key]!
+                    if let ipaNotation = substitution.ipaNotation {
+                        attributedString.addAttribute(NSAttributedString.Key(rawValue: AVSpeechSynthesisIPANotationAttribute), value: ipaNotation,
+                        range: range)
+                    }
+                }
+            }
+        }
+
+        return attributedString
+    }
+
+    func attributedTextHebrew(for legProgress: RouteLegProgress) -> NSAttributedString {
+        if Locale.current.identifier == "he_IL" {
+            let substitutionsDictionary = hebrewSubstitutionDictionaryForHebrewDevice()
+            let replacedText = replaceStringsInText(text, with: substitutionsDictionary)
+            return NSAttributedString(string: replacedText)
+        } else {
+            let substitutionsDictionary = hebrewSubstitutionDictionary()
+            let replacedText = replaceStringsInText(text, with: substitutionsDictionary)
+            let attributedString = NSAttributedString(string: replacedText)
+            return addIPANotationToAttributedString(attributedString, with: substitutionsDictionary)
+        }
     }
 }
 
@@ -84,11 +190,11 @@ open class RouteVoiceController: NSObject, AVSpeechSynthesizerDelegate {
     /**
      Default initializer for `RouteVoiceController`.
      */
-        public init(navigationService: NavigationService) {
+    public init(navigationService: NavigationService) {
         super.init()
-
+        
         verifyBackgroundAudio()
-
+        
         speechSynth.delegate = self
         
         observeNotifications(by: navigationService)
@@ -98,17 +204,17 @@ open class RouteVoiceController: NSObject, AVSpeechSynthesizerDelegate {
     public override init() {
         fatalError()
     }
-
+    
     private func verifyBackgroundAudio() {
         guard UIApplication.shared.isKind(of: UIApplication.self) else {
             return
         }
-
+        
         if !Bundle.main.backgroundModes.contains("audio") {
             assert(false, "This application’s Info.plist file must include “audio” in UIBackgroundModes. This background mode is used for spoken instructions while the application is in the background.")
         }
     }
-
+    
     deinit {
         suspendNotifications()
         speechSynth.stopSpeaking(at: .immediate)
@@ -215,7 +321,7 @@ open class RouteVoiceController: NSObject, AVSpeechSynthesizerDelegate {
         
         routeProgress = notification.userInfo![RouteController.NotificationUserInfoKey.routeProgressKey] as? RouteProgress
         assert(routeProgress != nil, "routeProgress should not be nil.")
-
+        
         guard let instruction = routeProgress!.currentLegProgress.currentStepProgress.currentSpokenInstruction else { return }
         lastSpokenInstruction = instruction
         speak(instruction)
@@ -237,27 +343,58 @@ open class RouteVoiceController: NSObject, AVSpeechSynthesizerDelegate {
             voiceControllerDelegate?.voiceController(self, spokenInstructionsDidFailWith: $0)
         }
         
-        var utterance: AVSpeechUtterance?
-        if Locale.preferredLocalLanguageCountryCode == "en-US" {
-            // Alex can’t handle attributed text.
-            utterance = AVSpeechUtterance(string: instruction.text)
-            utterance!.voice = AVSpeechSynthesisVoice(identifier: AVSpeechSynthesisVoiceIdentifierAlex)
+        
+        guard routeProgress!.route.speechLocale != nil else {
+            //            let wrapped = SpeechError.undefinedSpeechLocale(instruction: instruction, progress: progress)
+            //            speakWithDefaultSpeechSynthesizer(instruction, error: wrapped)
+            return
         }
         
-        let modifiedInstruction = voiceControllerDelegate?.voiceController(self, willSpeak: instruction, routeProgress: routeProgress!) ?? instruction
+        let locale = routeProgress!.route.speechLocale!
         
-        if utterance?.voice == nil {
+        var utterance: AVSpeechUtterance?
+        var voiceToUse: AVSpeechSynthesisVoice?
+        
+        /**
+         This is a fix to a bug where the tts speech voice switches between male and female if the Alex voice isn't available
+         This fix is currently only for English
+         If the preferred local language is English, we get all the american voices and try to assign them in the order below
+         */
+        
+        let modifiedInstruction = voiceControllerDelegate?.voiceController(self, willSpeak: instruction, routeProgress: routeProgress!) ?? instruction
+        if locale.identifier.contains("he")  {
+            utterance = AVSpeechUtterance(attributedString: modifiedInstruction.attributedTextHebrew(for: routeProgress!.currentLegProgress))
+        } else {
             utterance = AVSpeechUtterance(attributedString: modifiedInstruction.attributedText(for: routeProgress!.currentLegProgress))
+        }
+        
+        if locale.identifier.contains("en") {
+            let americanVoices = AVSpeechSynthesisVoice.speechVoices().filter { $0.language == "en-US" }
+            let names = americanVoices.map { $0.name }
+            if names.contains("Alex") {
+                utterance = AVSpeechUtterance(string: instruction.text)
+                utterance!.voice = AVSpeechSynthesisVoice(identifier: AVSpeechSynthesisVoiceIdentifierAlex)
+            } else if names.contains("Samantha") {
+                voiceToUse = americanVoices.first(where: { $0.name == "Samantha" })
+                utterance!.voice = voiceToUse
+            } else if names.contains("Nicky") {
+                voiceToUse = americanVoices.first(where: { $0.name == "Nicky" })
+                utterance!.voice = voiceToUse
+            }
         }
         
         // Only localized languages will have a proper fallback voice
         if utterance?.voice == nil {
-            utterance?.voice = AVSpeechSynthesisVoice(language: Locale.preferredLocalLanguageCountryCode)
+            utterance?.voice = voiceToUse ?? AVSpeechSynthesisVoice(language: locale.identifier)
         }
         
         if let utterance = utterance {
             speechSynth.speak(utterance)
         }
+    }
+    
+    open func stopSpeech() {
+        speechSynth.stopSpeaking(at: .word)
     }
 }
 
@@ -275,7 +412,7 @@ public protocol VoiceControllerDelegate: class, UnimplementedLogging {
      */
     
     func voiceController(_ voiceController: RouteVoiceController, didFallBackTo synthesizer: AVSpeechSynthesizer, error: SpeechError)
-   
+    
     /**
      Called when the voice controller failed to speak an instruction.
      
