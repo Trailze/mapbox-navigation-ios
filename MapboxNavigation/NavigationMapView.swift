@@ -80,9 +80,12 @@ open class NavigationMapView: MGLMapView, UIGestureRecognizerDelegate {
     let instructionCircle = "instructionCircle"
     
     @objc dynamic public var trafficUnknownColor: UIColor = .trafficUnknown
+    @objc dynamic public var trafficUnknownCasingColor: UIColor = UIColor(red: 154/255, green: 162/255, blue:233/255, alpha: 1)
     @objc dynamic public var trafficLowColor: UIColor = .trafficLow
     @objc dynamic public var trafficModerateColor: UIColor = .trafficModerate
+    @objc dynamic public var trafficModerateCasingColor: UIColor = UIColor(red: 102/255, green: 105/255, blue:226/255, alpha: 1)
     @objc dynamic public var trafficHeavyColor: UIColor = .trafficHeavy
+    @objc dynamic public var trafficHeavyCasingColor: UIColor = UIColor(red: 237/255, green: 60/255, blue:64/255, alpha: 1)
     @objc dynamic public var trafficSevereColor: UIColor = .trafficSevere
     @objc dynamic public var routeCasingColor: UIColor = .defaultRouteCasing
     @objc dynamic public var routeAlternateColor: UIColor = .defaultAlternateLine
@@ -930,6 +933,8 @@ open class NavigationMapView: MGLMapView, UIGestureRecognizerDelegate {
         lineCasing.lineColor = NSExpression(forConditional: NSPredicate(format: "isAlternateRoute == true"),
                                             trueExpression: NSExpression(forConstantValue: routeAlternateCasingColor),
                                             falseExpression: NSExpression(forConstantValue: routeCasingColor))
+        
+        lineCasing.lineColor = NSExpression(format: "TERNARY(isAlternateRoute == true, %@, MGL_MATCH(congestion, 'moderate', %@, 'heavy', %@, %@))", routeAlternateColor, trafficModerateCasingColor, trafficHeavyCasingColor, trafficUnknownCasingColor)
         
         lineCasing.lineCap = NSExpression(forConstantValue: "round")
         lineCasing.lineJoin = NSExpression(forConstantValue: "round")
