@@ -43,7 +43,7 @@ extension BottomBannerViewController {
         
         let cancelButton = CancelButton(type: .custom)
         cancelButton.translatesAutoresizingMaskIntoConstraints = false
-        cancelButton.setImage(UIImage(named: "close", in: .mapboxNavigation, compatibleWith: nil), for: .normal)
+        cancelButton.setImage(UIImage(named: "close", in: .mapboxNavigation, compatibleWith: nil)?.withRenderingMode(.alwaysTemplate), for: .normal)
         bottomBannerView.addSubview(cancelButton)
         self.cancelButton = cancelButton
         
@@ -71,7 +71,7 @@ extension BottomBannerViewController {
         
         c.append(cancelButton.widthAnchor.constraint(equalTo: bottomBannerView.heightAnchor))
         c.append(cancelButton.topAnchor.constraint(equalTo: bottomBannerView.topAnchor))
-        c.append(cancelButton.trailingAnchor.constraint(equalTo: bottomBannerView.trailingAnchor))
+        c.append(cancelButton.trailingAnchor.constraint(equalTo: bottomBannerView.trailingAnchor, constant: 10))
         c.append(cancelButton.bottomAnchor.constraint(equalTo: bottomBannerView.bottomAnchor))
         
         c.append(timeRemainingLabel.leadingAnchor.constraint(equalTo: bottomBannerView.leadingAnchor, constant: 10))
@@ -90,7 +90,7 @@ extension BottomBannerViewController {
         c.append(horizontalDividerView.leadingAnchor.constraint(equalTo:bottomBannerView.leadingAnchor))
         c.append(horizontalDividerView.trailingAnchor.constraint(equalTo: bottomBannerView.trailingAnchor))
         
-        c.append(arrivalTimeLabel.trailingAnchor.constraint(equalTo: verticalDividerView.leadingAnchor, constant: -10))
+        c.append(arrivalTimeLabel.trailingAnchor.constraint(equalTo: verticalDividerView.leadingAnchor, constant: 15))
         c.append(arrivalTimeLabel.centerYAnchor.constraint(equalTo: cancelButton.centerYAnchor))
     }
     
@@ -98,7 +98,7 @@ extension BottomBannerViewController {
         let size = bottomBannerView.heightAnchor.constraint(equalToConstant: 80)
         c.append(size)
         
-        c.append(timeRemainingLabel.leadingAnchor.constraint(equalTo: bottomBannerView.leadingAnchor, constant: 10))
+        c.append(timeRemainingLabel.leadingAnchor.constraint(equalTo: bottomBannerView.leadingAnchor, constant: 23))
         c.append(timeRemainingLabel.lastBaselineAnchor.constraint(equalTo: bottomBannerView.centerYAnchor, constant: 0))
         
         c.append(distanceRemainingLabel.leadingAnchor.constraint(equalTo: timeRemainingLabel.leadingAnchor))
@@ -106,13 +106,13 @@ extension BottomBannerViewController {
         
         c.append(cancelButton.widthAnchor.constraint(equalToConstant: 80))
         c.append(cancelButton.topAnchor.constraint(equalTo: bottomBannerView.topAnchor))
-        c.append(cancelButton.trailingAnchor.constraint(equalTo: bottomBannerView.trailingAnchor))
+        c.append(cancelButton.trailingAnchor.constraint(equalTo: bottomBannerView.trailingAnchor, constant: 5))
         c.append(cancelButton.bottomAnchor.constraint(equalTo: bottomBannerView.bottomAnchor))
         
         c.append(verticalDividerView.widthAnchor.constraint(equalToConstant: 1))
         c.append(verticalDividerView.heightAnchor.constraint(equalToConstant: 40))
         c.append(verticalDividerView.centerYAnchor.constraint(equalTo: bottomBannerView.centerYAnchor))
-        c.append(verticalDividerView.trailingAnchor.constraint(equalTo: cancelButton.leadingAnchor))
+        c.append(verticalDividerView.trailingAnchor.constraint(equalTo: cancelButton.leadingAnchor, constant: -10))
         
         c.append(horizontalDividerView.heightAnchor.constraint(equalToConstant: 1 / UIScreen.main.scale))
         c.append(horizontalDividerView.topAnchor.constraint(equalTo: bottomBannerView.topAnchor))
@@ -120,7 +120,7 @@ extension BottomBannerViewController {
         c.append(horizontalDividerView.trailingAnchor.constraint(equalTo: bottomBannerView.trailingAnchor))
         
         c.append(arrivalTimeLabel.centerYAnchor.constraint(equalTo: bottomBannerView.centerYAnchor))
-        c.append(arrivalTimeLabel.trailingAnchor.constraint(equalTo: verticalDividerView.leadingAnchor, constant: -10))
+        c.append(arrivalTimeLabel.trailingAnchor.constraint(equalTo: verticalDividerView.leadingAnchor, constant: -35))
     }
     
     open func reinstallConstraints() {
