@@ -86,6 +86,7 @@ open class TopBannerViewController: UIViewController {
         banner.heightAnchor.constraint(equalToConstant: instructionsBannerHeight).isActive = true
         banner.delegate = self
         banner.swipeable = true
+        banner.showStepIndicator = false
         return banner
     }()
     
@@ -431,7 +432,7 @@ extension TopBannerViewController: StepsViewControllerDelegate {
     
     public func didDismissStepsViewController(_ viewController: StepsViewController) {
         dismissStepsTable()
-        instructionsBannerView.showStepIndicator = true
+        instructionsBannerView.showStepIndicator = false
     }
 }
 
