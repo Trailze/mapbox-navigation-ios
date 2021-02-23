@@ -28,30 +28,30 @@ extension RouteOptions {
     }
 }
 
-extension RouteOptions: NSCopying {
-    public func copy(with zone: NSZone? = nil) -> Any {
-        do {
-            let encodedOptions = try JSONEncoder().encode(self)
-            return try JSONDecoder().decode(RouteOptions.self, from: encodedOptions)
-        } catch {
-            preconditionFailure("Unable to copy RouteOptions by round-tripping it through JSON")
-        }
-    }
+// extension RouteOptions: NSCopying {
+//     public func copy(with zone: NSZone? = nil) -> Any {
+//         do {
+//             let encodedOptions = try JSONEncoder().encode(self)
+//             return try JSONDecoder().decode(RouteOptions.self, from: encodedOptions)
+//         } catch {
+//             preconditionFailure("Unable to copy RouteOptions by round-tripping it through JSON")
+//         }
+//     }
     
-    /**
-     Returns a copy of RouteOptions without the specified waypoint.
+//     /**
+//      Returns a copy of RouteOptions without the specified waypoint.
      
-     - parameter waypoint: the Waypoint to exclude.
-     - returns: a copy of self excluding the specified waypoint.
-     */
-    public func without(waypoint: Waypoint) -> RouteOptions {
-        let waypointsWithoutSpecified = waypoints.filter { $0 != waypoint }
-        let copy = self.copy() as! RouteOptions
-        copy.waypoints = waypointsWithoutSpecified
+//      - parameter waypoint: the Waypoint to exclude.
+//      - returns: a copy of self excluding the specified waypoint.
+//      */
+//     public func without(waypoint: Waypoint) -> RouteOptions {
+//         let waypointsWithoutSpecified = waypoints.filter { $0 != waypoint }
+//         let copy = self.copy() as! RouteOptions
+//         copy.waypoints = waypointsWithoutSpecified
         
-        return copy
-    }
-}
+//         return copy
+//     }
+// }
 
 extension Array {
     /**

@@ -261,11 +261,11 @@ open class RouteProgress: NSObject {
             user.heading = current.course
             user.headingAccuracy = RouteProgress.reroutingAccuracy
         }
-        let newWaypoints = [user] + remainingWaypointsForCalculatingRoute()
-        let newOptions = oldOptions.copy() as! RouteOptions
-        newOptions.waypoints = newWaypoints
+        // let newWaypoints = [user] + remainingWaypointsForCalculatingRoute()
+        // let newOptions = oldOptions.copy() as! RouteOptions
+        // newOptions.waypoints = newWaypoints
 
-        return newOptions
+        return oldOptions
     }
 }
 
